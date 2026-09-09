@@ -1,7 +1,9 @@
 services:
   postgres:
     image: postgres:16-alpine
-    command: ["postgres", "-c", "max_connections=512"]
+    # Sized for 1,000 worker containers with one database connection each,
+    # plus API/admin headroom. No CPU or memory limit is applied to the stack.
+    command: ["postgres", "-c", "max_connections=2048", "-c", "shared_buffers=8GB"]
     environment:
       POSTGRES_DB: captain_attack
       POSTGRES_USER: captain
@@ -20,7 +22,7 @@ services:
     environment:
       PORT: 4173
       DATABASE_URL: postgres://captain:captain_local_password@postgres:5432/captain_attack
-      API_POOL_MAX: 30
+      API_POOL_MAX: 64
       BASIC_AUTH_USER: ${BASIC_AUTH_USER:-captain}
       BASIC_AUTH_PASSWORD: ${BASIC_AUTH_PASSWORD:?Set BASIC_AUTH_PASSWORD before starting}
     ports:
@@ -35,8 +37,8 @@ services:
     command: ["npm", "run", "worker"]
     environment:
       DATABASE_URL: postgres://captain:captain_local_password@postgres:5432/captain_attack
-      WORKER_CONCURRENCY: 16
-      WORKER_DB_POOL_MAX: 3
+      WORKER_CONCURRENCY: 18
+      WORKER_DB_POOL_MAX: 1
       WORKER_POLL_MS: 1000
       WORKER_HEARTBEAT_MS: 3000
     depends_on:

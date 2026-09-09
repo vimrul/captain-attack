@@ -24,6 +24,18 @@ export BASIC_AUTH_PASSWORD='use-a-long-random-password'
 docker compose up -d --build --scale worker=100
 ```
 
+For a 1,000-container fleet on the planned 18-vCPU/118-GB host, use:
+
+```bash
+docker compose up -d --build --scale worker=1000
+```
+
+The worker default is 18 request loops per container, with one Postgres
+connection per worker pool. The Compose services have no CPU or memory caps,
+so Docker will allow them to use the host's available resources. Monitor
+network bandwidth, target capacity, and Postgres connection/load pressure
+before increasing the fleet further.
+
 Use HTTPS through a reverse proxy in production because Basic Auth credentials
 must not be sent over plain HTTP on an untrusted network.
 
