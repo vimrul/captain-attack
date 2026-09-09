@@ -21,6 +21,8 @@ services:
       PORT: 4173
       DATABASE_URL: postgres://captain:captain_local_password@postgres:5432/captain_attack
       API_POOL_MAX: 30
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-captain}
+      BASIC_AUTH_PASSWORD: ${BASIC_AUTH_PASSWORD:?Set BASIC_AUTH_PASSWORD before starting}
     ports:
       - "80:4173"
     depends_on:

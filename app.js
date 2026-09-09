@@ -32,7 +32,7 @@ function clientPreview() {
 
 function readConfig() {
   return {
-    name: $('#runName').value.trim(), targetUrl: $('#targetUrl').value.trim(), durationSeconds: numberValue('durationSeconds'), requestTimeoutMs: numberValue('requestTimeoutMs'),
+    name: $('#runName').value.trim(), targetUrl: $('#targetUrl').value.trim(), durationValue: numberValue('durationSeconds'), durationUnit: $('#durationUnit').value, requestTimeoutMs: numberValue('requestTimeoutMs'),
     secretCount: numberValue('secretCount'), secretMinLength: numberValue('secretMinLength'), secretMaxLength: numberValue('secretMaxLength'), valueMinLength: numberValue('valueMinLength'), valueMaxLength: numberValue('valueMaxLength'),
     allowRepeatedValues: $('#allowRepeatedValues').checked, repeatPercent: numberValue('repeatPercent'), dockerWorkers: numberValue('dockerWorkers'), workerConcurrency: numberValue('workerConcurrency'), successLogLimit: numberValue('successLogLimit'), rampStartWorkers: numberValue('rampStartWorkers'), rampDurationSeconds: numberValue('rampDurationSeconds'),
   };
@@ -52,9 +52,12 @@ function updateEnvelopeSummary() {
   const workers = numberValue('dockerWorkers') || 0;
   const concurrency = numberValue('workerConcurrency') || 0;
   const duration = numberValue('durationSeconds') || 0;
+  const unit = $('#durationUnit').value;
+  const maxByUnit = { sec: 86400, minute: 1440, day: 30, month: 1 };
+  $('#durationSeconds').max = maxByUnit[unit];
   $('#capacitySummary').textContent = `Up to ${(workers * concurrency).toLocaleString()} active request loops`;
   const ramp = numberValue('rampDurationSeconds') || 0;
-  $('#envelopeSummary').textContent = `${workers.toLocaleString()} worker leases · ${duration.toLocaleString()} second${duration === 1 ? '' : 's'} run${ramp ? ` · ramps over ${ramp}s` : ''}`;
+  $('#envelopeSummary').textContent = `${workers.toLocaleString()} worker leases · ${duration.toLocaleString()} ${unit} run${ramp ? ` · ramps over ${ramp}s` : ''}`;
   $('#dockerCommand').textContent = `docker compose up --build --scale worker=${Math.max(1, workers)}`;
 }
 
@@ -127,7 +130,7 @@ async function launchOrStop() {
 }
 
 function resetForm() {
-  $('#targetUrl').value = 'https://example.test/ingest'; $('#runName').value = 'Uppercase secret wave'; $('#durationSeconds').value = 60; $('#requestTimeoutMs').value = 10000; $('#dockerWorkers').value = 100; $('#workerConcurrency').value = 16; $('#successLogLimit').value = 200; $('#rampStartWorkers').value = 1; $('#rampDurationSeconds').value = 0; $('#secretCount').value = 4; $('#repeatPercent').value = 20; $('#secretMinLength').value = 2; $('#secretMaxLength').value = 8; $('#valueMinLength').value = 12; $('#valueMaxLength').value = 40; $('#allowRepeatedValues').checked = true; updateEnvelopeSummary(); updatePreview(); showToast('Wave form reset.');
+  $('#targetUrl').value = 'https://example.test/ingest'; $('#runName').value = 'Uppercase secret wave'; $('#durationSeconds').value = 60; $('#durationUnit').value = 'sec'; $('#requestTimeoutMs').value = 10000; $('#dockerWorkers').value = 100; $('#workerConcurrency').value = 16; $('#successLogLimit').value = 200; $('#rampStartWorkers').value = 1; $('#rampDurationSeconds').value = 0; $('#secretCount').value = 4; $('#repeatPercent').value = 20; $('#secretMinLength').value = 2; $('#secretMaxLength').value = 8; $('#valueMinLength').value = 12; $('#valueMaxLength').value = 40; $('#allowRepeatedValues').checked = true; updateEnvelopeSummary(); updatePreview(); showToast('Wave form reset.');
 }
 
 async function copyText(text, successMessage) { try { await navigator.clipboard.writeText(text); showToast(successMessage); } catch { showToast('Clipboard permission was unavailable.'); } }
@@ -141,6 +144,7 @@ $('#helpButton').addEventListener('click', () => { $('#helpModal').hidden = fals
 $('#closeModal').addEventListener('click', () => { $('#helpModal').hidden = true; });
 $('#helpModal').addEventListener('click', (event) => { if (event.target === $('#helpModal')) $('#helpModal').hidden = true; });
 $$('input').forEach((input) => input.addEventListener('input', () => { updateEnvelopeSummary(); schedulePreview(); }));
+$('#durationUnit').addEventListener('change', () => { updateEnvelopeSummary(); schedulePreview(); });
 $('#allowRepeatedValues').addEventListener('change', schedulePreview);
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); launchOrStop(); } if (event.key === 'Escape') $('#helpModal').hidden = true; });
 

@@ -16,6 +16,20 @@ docker compose up --build
 
 Open <http://localhost:80> (or the server's public IP on port 80).
 
+The page and API use HTTP Basic Auth. Set credentials before starting:
+
+```bash
+export BASIC_AUTH_USER=captain
+export BASIC_AUTH_PASSWORD='use-a-long-random-password'
+docker compose up -d --build --scale worker=100
+```
+
+Use HTTPS through a reverse proxy in production because Basic Auth credentials
+must not be sent over plain HTTP on an untrusted network.
+
+Run duration supports seconds, minutes, days, and a 30-day month. The maximum
+is 24 hours, 30 days, or one 30-day month depending on the selected unit.
+
 Scale to 100 workers:
 
 ```bash

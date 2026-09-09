@@ -9,6 +9,8 @@ const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = Number.parseInt(process.env.PORT || '4173', 10);
 const databaseUrl = process.env.DATABASE_URL || 'postgres://captain:captain_local_password@localhost:5432/captain_attack';
+const basicAuthUser = process.env.BASIC_AUTH_USER || '';
+const basicAuthPassword = process.env.BASIC_AUTH_PASSWORD || '';
 const pool = new Pool({ connectionString: databaseUrl, max: Number.parseInt(process.env.API_POOL_MAX || '30', 10) });
 const app = express();
 
@@ -43,6 +45,30 @@ ALTER TABLE load_runs ADD COLUMN IF NOT EXISTS ramp_duration_seconds integer NOT
 `;
 
 function sleep(milliseconds) { return new Promise((resolve) => setTimeout(resolve, milliseconds)); }
+
+function basicAuth(request, response, next) {
+  if (request.path === '/api/health') return next();
+  const challenge = () => response.set('WWW-Authenticate', 'Basic realm="Captain Attack"').status(401).send('Authentication required.');
+  if (!basicAuthUser || !basicAuthPassword) return response.status(503).send('Basic Auth is not configured.');
+  const header = request.get('authorization') || '';
+  if (!header.startsWith('Basic ')) return challenge();
+  let suppliedUser = '';
+  let suppliedPassword = '';
+  try {
+    const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8');
+    const separator = decoded.indexOf(':');
+    if (separator < 0) return challenge();
+    suppliedUser = decoded.slice(0, separator);
+    suppliedPassword = decoded.slice(separator + 1);
+  } catch { return challenge(); }
+  const equal = (left, right) => {
+    const a = Buffer.from(left);
+    const b = Buffer.from(right);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  };
+  if (!equal(suppliedUser, basicAuthUser) || !equal(suppliedPassword, basicAuthPassword)) return challenge();
+  return next();
+}
 
 async function ensureSchema() {
   let lastError;
@@ -88,6 +114,7 @@ async function getActiveWorkers(runId) {
 }
 
 app.use(express.json({ limit: '32kb' }));
+app.use(basicAuth);
 app.get('/styles.css', (_request, response) => response.sendFile(path.join(__dirname, 'styles.css')));
 app.get('/app.js', (_request, response) => response.sendFile(path.join(__dirname, 'app.js')));
 app.get('/index.html', (_request, response) => response.sendFile(path.join(__dirname, 'index.html')));
@@ -98,7 +125,7 @@ app.get('/api/health', async (_request, response) => {
 
 app.post('/api/preview', (request, response) => {
   try {
-    const config = normalizeConfig({ ...request.body, durationSeconds: 1, dockerWorkers: 1, workerConcurrency: 1, successLogLimit: 0, rampStartWorkers: 1, rampDurationSeconds: 0 });
+    const config = normalizeConfig({ ...request.body, durationValue: 1, durationUnit: 'sec', durationSeconds: 1, dockerWorkers: 1, workerConcurrency: 1, successLogLimit: 0, rampStartWorkers: 1, rampDurationSeconds: 0 });
     const generated = buildRequest(config);
     response.json(generated);
   } catch (error) { response.status(400).json({ error: error.message }); }
