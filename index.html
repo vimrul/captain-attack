@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08111d" />
+    <title>Captain Attack — Secret wave runner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div><div class="brand-name">Captain Attack</div><div class="brand-caption">distributed curl runner</div></div>
+        </div>
+
+        <nav class="primary-nav" aria-label="Main navigation">
+          <a class="nav-item active" href="#builder"><span class="nav-icon">↗</span><span>New wave</span><span class="nav-pill">⌘ K</span></a>
+          <a class="nav-item" href="#signal"><span class="nav-icon">◷</span><span>Live signal</span></a>
+          <a class="nav-item" href="#history"><span class="nav-icon">◇</span><span>Run history</span></a>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="environment-card">
+            <div class="eyebrow">DISTRIBUTED MODE</div>
+            <div class="environment-row"><span class="status-dot"></span><span>Postgres coordinator</span><span class="live-label">ready</span></div>
+            <p>Workers claim leases from the database and generate payloads on demand.</p>
+          </div>
+          <div class="sidebar-footer"><span class="footer-dot"></span>v1.0.0 · docker ready</div>
+        </div>
+      </aside>
+
+      <main class="main-content" id="builder">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>Workspace</span><span class="crumb-separator">/</span><strong>New secret wave</strong></div>
+          <div class="topbar-actions"><button class="icon-button" id="resetButton" title="Reset form" aria-label="Reset form">↺</button><button class="quiet-button" id="helpButton"><span>?</span> How it scales</button><div class="avatar">IM</div></div>
+        </header>
+
+        <section class="hero-section">
+          <div>
+            <div class="section-kicker"><span class="kicker-line"></span> secret wave laboratory</div>
+            <h1>Generate the signal.<br /><em>Push it at scale.</em></h1>
+            <p class="hero-copy">Create fresh uppercase secret names and 12–40 character values, then send them in the cURL shape you already use.</p>
+          </div>
+          <div class="hero-stat"><span class="stat-label">CURRENT SESSION</span><strong id="sessionStatus">Draft</strong><span class="session-id" id="sessionId">ATK-7F3C</span></div>
+        </section>
+
+        <div class="workspace-grid">
+          <section class="card target-card">
+            <div class="card-header"><div><div class="card-index">01</div><h2>Target & payload</h2></div><span class="card-note">Exact cURL format</span></div>
+            <div class="form-stack">
+              <label class="field-label" for="targetUrl">URL</label>
+              <div class="endpoint-wrap"><span class="endpoint-globe">◎</span><input id="targetUrl" type="url" value="https://example.test/ingest" spellcheck="false" /></div>
+              <div class="field-row">
+                <div class="field-group"><label class="field-label" for="runName">Wave name</label><input id="runName" type="text" value="Uppercase secret wave" /></div>
+                <div class="field-group"><label class="field-label" for="requestTimeoutMs">Request timeout</label><div class="number-input"><input id="requestTimeoutMs" type="number" min="100" max="120000" value="10000" /><span>ms</span></div></div>
+              </div>
+              <div class="format-callout"><span class="format-mark">⌁</span><div><strong>Format locked</strong><code>curl -s -X POST -d 'KEY=value&KEY=value' URL</code></div></div>
+            </div>
+          </section>
+
+          <section class="card duration-card">
+            <div class="card-header"><div><div class="card-index">02</div><h2>Run envelope</h2></div><span class="card-note">Distributed pressure</span></div>
+            <div class="metric-grid">
+              <label class="metric-field"><span class="field-label">Run time</span><span class="number-input"><input id="durationSeconds" type="number" min="1" max="86400" value="60" /><span>sec</span></span></label>
+              <label class="metric-field"><span class="field-label">Docker workers</span><span class="number-input"><input id="dockerWorkers" type="number" min="1" max="10000" value="100" /><span>containers</span></span></label>
+              <label class="metric-field"><span class="field-label">Per-worker concurrency</span><span class="number-input"><input id="workerConcurrency" type="number" min="1" max="256" value="16" /><span>loops</span></span></label>
+              <label class="metric-field"><span class="field-label">Successful cURL retention</span><span class="number-input"><input id="successLogLimit" type="number" min="0" max="10000" value="200" /><span>samples</span></span></label>
+            </div>
+            <div class="load-intent"><span class="intent-icon">↗</span><div><strong id="capacitySummary">Up to 1,600 active request loops</strong><span id="envelopeSummary">100 worker leases · 60 second run</span></div></div>
+          </section>
+
+          <section class="card recipe-card">
+            <div class="card-header"><div><div class="card-index">03</div><h2>Secret generator</h2></div><button class="text-button" id="regenerateButton">↻ Generate preview</button></div>
+            <div class="recipe-layout">
+              <div class="recipe-controls">
+                <div class="recipe-title">Fresh fields per request</div>
+                <div class="field-row compact">
+                  <label class="field-group"><span class="field-label">Secret / value pairs</span><div class="number-input"><input id="secretCount" type="number" min="1" max="1000" value="4" /><span>pairs</span></div></label>
+                  <label class="field-group"><span class="field-label">Repeat chance</span><div class="number-input"><input id="repeatPercent" type="number" min="0" max="100" value="20" /><span>%</span></div></label>
+                </div>
+                <div class="field-row compact">
+                  <label class="field-group"><span class="field-label">Secret name length</span><div class="range-input"><input id="secretMinLength" type="number" min="2" max="20" value="2" /><span>to</span><input id="secretMaxLength" type="number" min="2" max="20" value="8" /><small>uppercase chars</small></div></label>
+                  <label class="field-group"><span class="field-label">Value length</span><div class="range-input"><input id="valueMinLength" type="number" min="12" max="40" value="12" /><span>to</span><input id="valueMaxLength" type="number" min="12" max="40" value="40" /><small>chars</small></div></label>
+                </div>
+                <label class="toggle-row"><input id="allowRepeatedValues" type="checkbox" checked /><span class="toggle-track"></span><span>Allow repeated values across requests</span><span class="toggle-hint">pool of 512 / worker</span></label>
+              </div>
+              <div class="preview-wrap"><div class="preview-label"><span>LIVE CURL PREVIEW</span><span class="live-chip"><i></i> fresh</span></div><pre id="curlPreview" class="curl-preview">Generating preview…</pre></div>
+            </div>
+          </section>
+
+          <section class="card launch-card">
+            <div class="launch-copy"><div class="launch-orb"><span></span></div><div><div class="card-index">READY WHEN YOU ARE</div><h2>Send the first wave.</h2><p>Generation is streamed inside workers. Postgres stores counters and a bounded successful cURL sample.</p></div></div>
+            <div class="launch-actions"><button class="secondary-button" id="previewButton">Refresh preview</button><button class="primary-button" id="launchButton"><span class="launch-icon">▶</span><span id="launchLabel">Launch wave</span></button></div>
+          </section>
+
+          <section class="card signal-card" id="signal" hidden>
+            <div class="card-header"><div><div class="card-index">LIVE RUN</div><h2>Signal report</h2></div><div class="run-state" id="runState"><i></i> idle</div></div>
+            <div class="result-metrics"><div><span>Requests sent</span><strong id="sentMetric">0</strong></div><div><span>Success rate</span><strong id="successMetric">—</strong></div><div><span>Throughput</span><strong id="throughputMetric">—</strong></div><div><span>Active workers</span><strong id="workersMetric">0 / 0</strong></div></div>
+            <div class="progress-track"><span id="progressBar"></span></div>
+            <div class="signal-meta"><span id="runTimer">0s elapsed</span><span id="runError"></span></div>
+            <div class="curl-log-header"><span>SUCCESSFUL CURL SENDS</span><span id="logCount">0 samples retained</span></div>
+            <div class="curl-log" id="curlLog"><div class="empty-log">Successful sends will appear here as workers report back.</div></div>
+          </section>
+
+          <section class="card docker-card">
+            <div class="docker-copy"><div class="docker-icon">▣</div><div><div class="card-index">WORKER FLEET</div><h2>Scale with one command.</h2><p>Run one API, one Postgres, and as many worker containers as the host can support.</p></div></div>
+            <div class="docker-command"><span class="terminal-prefix">$</span><code id="dockerCommand">docker compose up --build --scale worker=100</code><button class="copy-small" id="copyDockerButton">Copy</button></div>
+          </section>
+        </div>
+
+        <footer class="page-footer"><span>Streamed generation · batched counters · bounded logs</span><span><kbd>⌘</kbd><kbd>↵</kbd> launch wave</span></footer>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="helpModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="closeModal" aria-label="Close">×</button><div class="modal-kicker">HOW IT SCALES</div><h2 id="modalTitle">Generate millions without staging millions.</h2><p>The app does not pre-create a giant payload table. Each worker generates safe random names and values in memory, sends the exact request shape, batches counters, and stores only the successful cURL sample limit you choose.</p><div class="modal-list"><div><span>01</span><p><strong>Claim</strong><br />Workers claim a Postgres lease so 100+ containers can share one run.</p></div><div><span>02</span><p><strong>Generate</strong><br />Secret names are uppercase A–Z; values are 12–40 safe characters.</p></div><div><span>03</span><p><strong>Observe</strong><br />The UI polls counters and successful cURL samples while the wave runs.</p></div></div><div class="modal-warning">Only test systems you own or have permission to exercise. This app sends POST requests to the URL you configure.</div></div></div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
