@@ -14,13 +14,23 @@ Start the API, Postgres, and one worker:
 docker compose up --build
 ```
 
-Open <http://localhost:4173>.
+Open <http://localhost:80> (or the server's public IP on port 80).
 
 Scale to 100 workers:
 
 ```bash
 docker compose up --build --scale worker=100
 ```
+
+For a gradual ramp, set `Ramp start` and `Ramp duration` in the UI. For example,
+with 100 Docker workers, a start of 5 and duration of 120 seconds makes the
+active lease target increase from 5 to 100 over two minutes. The worker
+containers can be started ahead of time with `--scale worker=100`; they remain
+idle until they claim a lease.
+
+On the server, Postgres data is stored in `/home/ubuntu/postgres_data`. Only
+the API/frontend port is published; Postgres and workers stay on the internal
+Compose network.
 
 The UI's Docker worker setting is the maximum number of workers allowed to claim a run lease. The `--scale worker=N` value controls how many worker containers are actually running. Each container defaults to 16 concurrent request loops, configurable with `WORKER_CONCURRENCY` in `docker-compose.yml`.
 

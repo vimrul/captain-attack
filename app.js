@@ -34,7 +34,7 @@ function readConfig() {
   return {
     name: $('#runName').value.trim(), targetUrl: $('#targetUrl').value.trim(), durationSeconds: numberValue('durationSeconds'), requestTimeoutMs: numberValue('requestTimeoutMs'),
     secretCount: numberValue('secretCount'), secretMinLength: numberValue('secretMinLength'), secretMaxLength: numberValue('secretMaxLength'), valueMinLength: numberValue('valueMinLength'), valueMaxLength: numberValue('valueMaxLength'),
-    allowRepeatedValues: $('#allowRepeatedValues').checked, repeatPercent: numberValue('repeatPercent'), dockerWorkers: numberValue('dockerWorkers'), workerConcurrency: numberValue('workerConcurrency'), successLogLimit: numberValue('successLogLimit'),
+    allowRepeatedValues: $('#allowRepeatedValues').checked, repeatPercent: numberValue('repeatPercent'), dockerWorkers: numberValue('dockerWorkers'), workerConcurrency: numberValue('workerConcurrency'), successLogLimit: numberValue('successLogLimit'), rampStartWorkers: numberValue('rampStartWorkers'), rampDurationSeconds: numberValue('rampDurationSeconds'),
   };
 }
 
@@ -53,7 +53,8 @@ function updateEnvelopeSummary() {
   const concurrency = numberValue('workerConcurrency') || 0;
   const duration = numberValue('durationSeconds') || 0;
   $('#capacitySummary').textContent = `Up to ${(workers * concurrency).toLocaleString()} active request loops`;
-  $('#envelopeSummary').textContent = `${workers.toLocaleString()} worker leases · ${duration.toLocaleString()} second${duration === 1 ? '' : 's'} run`;
+  const ramp = numberValue('rampDurationSeconds') || 0;
+  $('#envelopeSummary').textContent = `${workers.toLocaleString()} worker leases · ${duration.toLocaleString()} second${duration === 1 ? '' : 's'} run${ramp ? ` · ramps over ${ramp}s` : ''}`;
   $('#dockerCommand').textContent = `docker compose up --build --scale worker=${Math.max(1, workers)}`;
 }
 
@@ -126,7 +127,7 @@ async function launchOrStop() {
 }
 
 function resetForm() {
-  $('#targetUrl').value = 'https://example.test/ingest'; $('#runName').value = 'Uppercase secret wave'; $('#durationSeconds').value = 60; $('#requestTimeoutMs').value = 10000; $('#dockerWorkers').value = 100; $('#workerConcurrency').value = 16; $('#successLogLimit').value = 200; $('#secretCount').value = 4; $('#repeatPercent').value = 20; $('#secretMinLength').value = 2; $('#secretMaxLength').value = 8; $('#valueMinLength').value = 12; $('#valueMaxLength').value = 40; $('#allowRepeatedValues').checked = true; updateEnvelopeSummary(); updatePreview(); showToast('Wave form reset.');
+  $('#targetUrl').value = 'https://example.test/ingest'; $('#runName').value = 'Uppercase secret wave'; $('#durationSeconds').value = 60; $('#requestTimeoutMs').value = 10000; $('#dockerWorkers').value = 100; $('#workerConcurrency').value = 16; $('#successLogLimit').value = 200; $('#rampStartWorkers').value = 1; $('#rampDurationSeconds').value = 0; $('#secretCount').value = 4; $('#repeatPercent').value = 20; $('#secretMinLength').value = 2; $('#secretMaxLength').value = 8; $('#valueMinLength').value = 12; $('#valueMaxLength').value = 40; $('#allowRepeatedValues').checked = true; updateEnvelopeSummary(); updatePreview(); showToast('Wave form reset.');
 }
 
 async function copyText(text, successMessage) { try { await navigator.clipboard.writeText(text); showToast(successMessage); } catch { showToast('Clipboard permission was unavailable.'); } }

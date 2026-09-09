@@ -24,6 +24,15 @@ async function getActiveRuns() {
   return result.rows;
 }
 
+function desiredWorkers(run) {
+  const start = Math.min(run.ramp_start_workers || 1, run.docker_workers);
+  const duration = run.ramp_duration_seconds || 0;
+  if (!duration) return run.docker_workers;
+  const elapsed = Math.max(0, (Date.now() - new Date(run.started_at).getTime()) / 1000);
+  const progress = Math.min(1, elapsed / duration);
+  return Math.max(start, Math.ceil(start + (run.docker_workers - start) * progress));
+}
+
 async function claimLease(runId, desiredWorkers) {
   const client = await pool.connect();
   try {
@@ -156,7 +165,7 @@ async function main() {
     try {
       const runs = await getActiveRuns();
       for (const run of runs) {
-        if (await claimLease(run.id, run.docker_workers)) {
+        if (await claimLease(run.id, desiredWorkers(run))) {
           console.log(`Worker ${workerId} claimed run ${run.id}`);
           await runClaimedRun(run).catch(async (error) => {
             console.error(`Run ${run.id} failed on worker ${workerId}:`, error);

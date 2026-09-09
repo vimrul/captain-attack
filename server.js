@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS load_runs (
   value_min_length integer NOT NULL, value_max_length integer NOT NULL,
   allow_repeated_values boolean NOT NULL DEFAULT true, repeat_percent integer NOT NULL DEFAULT 20,
   docker_workers integer NOT NULL, worker_concurrency integer NOT NULL, success_log_limit integer NOT NULL DEFAULT 200,
+  ramp_start_workers integer NOT NULL DEFAULT 1, ramp_duration_seconds integer NOT NULL DEFAULT 0,
   status text NOT NULL DEFAULT 'running', started_at timestamptz NOT NULL, ends_at timestamptz NOT NULL,
   stopped_at timestamptz, total_sent bigint NOT NULL DEFAULT 0, total_success bigint NOT NULL DEFAULT 0,
   total_failed bigint NOT NULL DEFAULT 0, total_timeout bigint NOT NULL DEFAULT 0,
@@ -37,6 +38,8 @@ CREATE TABLE IF NOT EXISTS success_logs (
   curl_command text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS success_logs_run_created_idx ON success_logs (run_id, created_at DESC, id DESC);
+ALTER TABLE load_runs ADD COLUMN IF NOT EXISTS ramp_start_workers integer NOT NULL DEFAULT 1;
+ALTER TABLE load_runs ADD COLUMN IF NOT EXISTS ramp_duration_seconds integer NOT NULL DEFAULT 0;
 `;
 
 function sleep(milliseconds) { return new Promise((resolve) => setTimeout(resolve, milliseconds)); }
@@ -64,6 +67,7 @@ function serializeRun(row, activeWorkers = 0) {
     valueMinLength: row.value_min_length, valueMaxLength: row.value_max_length,
     allowRepeatedValues: row.allow_repeated_values, repeatPercent: row.repeat_percent,
     dockerWorkers: row.docker_workers, workerConcurrency: row.worker_concurrency, successLogLimit: row.success_log_limit,
+    rampStartWorkers: row.ramp_start_workers, rampDurationSeconds: row.ramp_duration_seconds,
     startedAt: row.started_at, endsAt: row.ends_at, totalSent, totalSuccess: Number(row.total_success || 0),
     totalFailed: Number(row.total_failed || 0), totalTimeout: Number(row.total_timeout || 0),
     activeWorkers, elapsedSeconds: Math.round(elapsedMs / 1000),
@@ -94,7 +98,7 @@ app.get('/api/health', async (_request, response) => {
 
 app.post('/api/preview', (request, response) => {
   try {
-    const config = normalizeConfig({ ...request.body, durationSeconds: 1, dockerWorkers: 1, workerConcurrency: 1, successLogLimit: 0 });
+    const config = normalizeConfig({ ...request.body, durationSeconds: 1, dockerWorkers: 1, workerConcurrency: 1, successLogLimit: 0, rampStartWorkers: 1, rampDurationSeconds: 0 });
     const generated = buildRequest(config);
     response.json(generated);
   } catch (error) { response.status(400).json({ error: error.message }); }
@@ -109,12 +113,12 @@ app.post('/api/runs', async (request, response) => {
     await pool.query(`INSERT INTO load_runs (
       id, name, target_url, duration_seconds, request_timeout_ms, secret_count, secret_min_length, secret_max_length,
       value_min_length, value_max_length, allow_repeated_values, repeat_percent, docker_workers, worker_concurrency,
-      success_log_limit, status, started_at, ends_at
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'running',$16,$17)`, [
+      success_log_limit, ramp_start_workers, ramp_duration_seconds, status, started_at, ends_at
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,'running',$18,$19)`, [
       id, config.name, config.targetUrl, config.durationSeconds, config.requestTimeoutMs, config.secretCount,
       config.secretMinLength, config.secretMaxLength, config.valueMinLength, config.valueMaxLength,
       config.allowRepeatedValues, config.repeatPercent, config.dockerWorkers, config.workerConcurrency,
-      config.successLogLimit, startedAt, endsAt,
+      config.successLogLimit, config.rampStartWorkers, config.rampDurationSeconds, startedAt, endsAt,
     ]);
     const run = await getRun(id);
     response.status(201).json(serializeRun(run));

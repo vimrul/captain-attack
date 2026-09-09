@@ -65,7 +65,9 @@
             <div class="metric-grid">
               <label class="metric-field"><span class="field-label">Run time</span><span class="number-input"><input id="durationSeconds" type="number" min="1" max="86400" value="60" /><span>sec</span></span></label>
               <label class="metric-field"><span class="field-label">Docker workers</span><span class="number-input"><input id="dockerWorkers" type="number" min="1" max="10000" value="100" /><span>containers</span></span></label>
+              <label class="metric-field"><span class="field-label">Ramp start</span><span class="number-input"><input id="rampStartWorkers" type="number" min="1" max="10000" value="1" /><span>workers</span></span></label>
               <label class="metric-field"><span class="field-label">Per-worker concurrency</span><span class="number-input"><input id="workerConcurrency" type="number" min="1" max="256" value="16" /><span>loops</span></span></label>
+              <label class="metric-field"><span class="field-label">Ramp duration</span><span class="number-input"><input id="rampDurationSeconds" type="number" min="0" max="86400" value="0" /><span>sec · 0 = instant</span></span></label>
               <label class="metric-field"><span class="field-label">Successful cURL retention</span><span class="number-input"><input id="successLogLimit" type="number" min="0" max="10000" value="200" /><span>samples</span></span></label>
             </div>
             <div class="load-intent"><span class="intent-icon">↗</span><div><strong id="capacitySummary">Up to 1,600 active request loops</strong><span id="envelopeSummary">100 worker leases · 60 second run</span></div></div>
