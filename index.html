@@ -63,7 +63,7 @@
           <section class="card duration-card">
             <div class="card-header"><div><div class="card-index">02</div><h2>Run envelope</h2></div><span class="card-note">Distributed pressure</span></div>
             <div class="metric-grid">
-              <label class="metric-field"><span class="field-label">Run time</span><span class="number-input"><input id="durationSeconds" type="number" min="1" max="30" value="60" /><select id="durationUnit" aria-label="Run time unit"><option value="sec" selected>sec</option><option value="minute">minutes</option><option value="day">days</option><option value="month">month (30 days)</option></select></span></label>
+              <label class="metric-field"><span class="field-label">Run time</span><span class="number-input"><input id="durationSeconds" type="number" min="1" max="86400" value="60" /><select id="durationUnit" aria-label="Run time unit"><option value="sec" selected>sec</option><option value="minute">minutes</option><option value="day">days</option><option value="month">month (30 days)</option></select></span></label>
               <label class="metric-field"><span class="field-label">Docker workers</span><span class="number-input"><input id="dockerWorkers" type="number" min="1" max="10000" value="100" /><span>containers</span></span></label>
               <label class="metric-field"><span class="field-label">Ramp start</span><span class="number-input"><input id="rampStartWorkers" type="number" min="1" max="10000" value="1" /><span>workers</span></span></label>
               <label class="metric-field"><span class="field-label">Per-worker concurrency</span><span class="number-input"><input id="workerConcurrency" type="number" min="1" max="256" value="16" /><span>loops</span></span></label>
